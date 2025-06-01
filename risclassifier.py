@@ -126,6 +126,11 @@ CONFIDENCE: [High/Medium/Low]
         
         return result
     
+    def save_results(self, results: List[Dict], output_file: str):
+        """Save classification results to JSON file"""
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(results, f, indent=2, ensure_ascii=False, default=str)
+
     def classify_entries(self, entries: List[Dict], inclusion_criteria: str, 
                         delay_between_requests: float = 1.0) -> List[Dict]:
         """
@@ -163,17 +168,12 @@ CONFIDENCE: [High/Medium/Low]
             }
             
             results.append(result)
-            
+            self.save_results(results,'results.json') 
             # Add delay to avoid overwhelming the server
             if delay_between_requests > 0:
                 time.sleep(delay_between_requests)
         
         return results
-    
-    def save_results(self, results: List[Dict], output_file: str):
-        """Save classification results to JSON file"""
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(results, f, indent=2, ensure_ascii=False, default=str)
     
     def get_summary(self, results: List[Dict]) -> Dict:
         """Get summary statistics of classification results"""
