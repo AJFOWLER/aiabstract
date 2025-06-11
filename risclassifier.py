@@ -63,6 +63,8 @@ Format your response as:
 DECISION: [INCLUDE/EXCLUDE]
 REASONING: [Your explanation]
 CONFIDENCE: [High/Medium/Low]
+
+if the abstract is missing, then make the decision 'UNKNOWN'.
 """
         return prompt
     
