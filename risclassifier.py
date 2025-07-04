@@ -1,3 +1,4 @@
+import os
 import rispy
 import requests
 import json
@@ -68,7 +69,7 @@ if the abstract is missing, then make the decision 'UNKNOWN'.
 """
         return prompt
     
-    def query_llama(self, prompt: str, max_tokens: int = 2048, temperature: float = 0.6) -> Optional[str]:
+    def query_llama(self, prompt: str, max_tokens: int = 2048, temperature: float = 0.16) -> Optional[str]:
         """
         Send prompt to local Llama model
         
@@ -128,6 +129,16 @@ if the abstract is missing, then make the decision 'UNKNOWN'.
         
         return result
     
+    def load_old(self, output_file:str) -> List[Dict]:
+        if not os.path.exists(output_file):
+            return []
+        try:
+            with open(output_file, 'r', encoding='utf-8') as f:
+                      existing_data = json.load(f)
+            return existing_data
+        except (json.JSONDecodeError, FileNotFoundError):
+            return []
+
     def save_results(self, results: List[Dict], output_file: str):
         """Save classification results to JSON file"""
         with open(output_file, 'w', encoding='utf-8') as f:
@@ -143,10 +154,16 @@ if the abstract is missing, then make the decision 'UNKNOWN'.
             inclusion_criteria: Your inclusion criteria text
             delay_between_requests: Delay between API calls to avoid overwhelming the server
         """
-        results = []
-        
-        for i, entry in enumerate(entries):
-            print(f"Processing entry {i+1}/{len(entries)}")
+        # try to load old data
+        results = self.load_old('results.json')
+        # If there isn't any --> start fresh!
+        if len(results) > 0:
+            # Get the NEXT entry
+            sp = results[-1]['entry_index']+1
+        else:
+            sp = 0
+        for i, entry in enumerate(entries[sp:]):
+            print(f"Processing entry {sp+i}/{len(entries)}")
             
             # Create prompt
             prompt = self.create_classification_prompt(entry, inclusion_criteria)
@@ -159,7 +176,7 @@ if the abstract is missing, then make the decision 'UNKNOWN'.
             
             # Add to results
             result = {
-                'entry_index': i,
+                'entry_index': sp+i,
                 'title': entry.get('title', 'No title'),
                 'year': entry.get('year', 'Unknown'),
                 'decision': classification['decision'],
