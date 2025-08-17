@@ -15,9 +15,17 @@ def build_rag():
 # To query:
 def query_rag():
     rr = RisRag()
-    query = "surgical treatment or surgery"
-    select_ = rr.query_embedded_data(query,k=100)
+    query = "surgical treatment or surgery or operative procedures"
+    surgery = rr.query_embedded_data(query,k=650)
+    # Then do something like electronic cigarette use/vaping?
+    electronic_cigarettes = 'vaping or electronic cigarettes or e-cigarette'
     import pdb; pdb.set_trace() 
+    # can we do something to negate smoking?
+    # Top interactions = most relevant?
+    # sum ranks = lowest is most relevant?
+    import json
+    with open('embedding_results.json','w') as f:
+        json.dump(select_,f)
 
 #build_rag()
 query_rag()
