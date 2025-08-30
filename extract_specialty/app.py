@@ -54,7 +54,7 @@ def parse_llm(prompt):
         "stream": False
     }
     try: 
-        response = requests.post(api_endpoint, json=payload, timeout=2400)
+        response = requests.post(api_endpoint, json=payload, timeout=1000)
         response.raise_for_status()
         result = response.json()
         return result['choices'][0]['message']['content']
@@ -64,20 +64,35 @@ def parse_llm(prompt):
 
 def classify(file):
     pmid_file = read_csv(file)
+    prompt_template_2 = """
+    You are a bot classifying medical literature. Please identify the medical or surgical procedure that is studied or described in the abstract below.from the abstract below the medical or surgical procedure described or studied. If possible, extract the procedure directly. Format to return:
+        PROCEDURE : insert name of procedure
+        ANATOMICAL: insert name of body part operated on
+        SPECIALTY: insert surgical specialty most likely to perform the procedure
+    The abstract is below:
+    """
     prompt_template = """
-    You are a bot classifying medical literature abstracts according to the type of surgery they describe or the specialty involved. For example, if describing uterine embolisation, this would be gynaecological surgery. If it involved coronary surgery, it would be classed as cardiac surgery. 
+    You are a bot classifying medical literature abstracts according to the type of surgery they describe or the specialty involved. For example, if describing uterine embolisation, this would be gynaecological surgery. If it involved coronary surgery, it would be classed as cardiac surgery. Surgery on blood vessels would be vascular surgery
     Please return what you think is the most appropriate specialty in as few words as possible.
     The abstract you are to classify is here:
     """
 
     output = []
     # do in chunks of 10 abstracts.
-    chunks = len(pmid_file)/20 #111 chunks
-    for x in pmid_file[0:150]:
-        prompt = prompt_template + x['Abstract']
+    i = 1
+    for x in pmid_file:
+        print(i)
+        i+=1
+        prompt = prompt_template_2 + x['Abstract']
         result = parse_llm(prompt)
         x['response'] = result
         output.append(x)
+    return output
 
-
-    
+#17/8 - 0:704
+# 704 onwards.
+def save_parsed(f, n):
+    with open(n, 'w', newline='') as of:
+        dict_writer = csv.DictWriter(of, ['PMID', 'Abstract', 'response'])
+        dict_writer.writeheader()
+        dict_writer.writerows(f)
