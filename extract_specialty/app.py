@@ -65,10 +65,10 @@ def parse_llm(prompt):
 def classify(file):
     pmid_file = read_csv(file)
     prompt_template_2 = """
-    You are a bot classifying medical literature. Please identify the medical or surgical procedure that is studied or described in the abstract below.from the abstract below the medical or surgical procedure described or studied. If possible, extract the procedure directly. Format to return:
+    You are a bot classifying medical literature. Please identify the medical or surgical procedure that is studied or described in the abstract below. If possible, extract the procedure directly. Format to return:
         PROCEDURE : insert name of procedure
         ANATOMICAL: insert name of body part operated on
-        SPECIALTY: insert surgical specialty most likely to perform the procedure
+        SPECIALTY: insert medical specialty most likely to perform the procedure or treat the problem described.
     The abstract is below:
     """
     prompt_template = """
@@ -80,7 +80,7 @@ def classify(file):
     output = []
     # do in chunks of 10 abstracts.
     i = 1
-    for x in pmid_file:
+    for x in pmid_file[1001:1500]:
         print(i)
         i+=1
         prompt = prompt_template_2 + x['Abstract']
